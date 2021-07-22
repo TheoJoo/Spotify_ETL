@@ -11,22 +11,38 @@ DATABASE_LOCATION = "sqlite:///my_played_tracks.sqlite"
 USER_ID = ""
 TOKEN = ""
 
+	# Generate your token here: https://developer.spotify.com/console/get-recently-played/
+
+# Transformation step
+def check_if_valid_data(df: pd.DataFrame) -> bool:
+	# Check if dataframe is empty
+	if df.empty:
+		print("No songs downloaded. Finishing execution")
+		return False
+
+	# Primary Key
+	if pd.Series(df['played_at']).is_unique:
+		pass
+	else:
+		raise Exception("Primary Key Check is violated")
+
 if __name__ == "__main__":
 
-	#Send some information in the header, according to the Spotify API
+	# Extract step
+	# Send some information in the header, according to the Spotify API
 	headers = {
 		"Accept": "appliaction/json",
 		"Content-Type": "application/json",
 		"Authorization": "Bearer {token}".format(token=TOKEN)
 	}
 
-	#We want to run this feed daily, we want the songs in the last 24hours
+	# We want to run this feed daily, we want the songs in the last 24hours
 	today = datetime.datetime.now()
 	yesterday = today - datetime.timedelta(days=1)
-	#We need to convert to unix timestamp in milliseconds, according to the Spotify API
+	# We need to convert to unix timestamp in milliseconds, according to the Spotify API
 	yesterday_unix_timestamp = int(yesterday.timestamp())*1000
 
-	#Number of tracks we want to extract, min=1, max=50.
+	# Number of tracks we want to extract, min=1, max=50.
 	numberOfTracks = 50
 
 	r = requests.get("https://api.spotify.com/v1/me/player/recently-played?limit={limit}&after={time}".format(limit=numberOfTracks, time=yesterday_unix_timestamp), headers = headers)
