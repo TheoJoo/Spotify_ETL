@@ -13,5 +13,6 @@ Automation with airflow
 
 Use Python3 
 Install sqlalchemy, pandas, requests
+Download dbeaver to read your database
 
 credit : K.Sowinska

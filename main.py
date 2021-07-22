@@ -13,7 +13,7 @@ TOKEN = ""
 
 	# Generate your token here: https://developer.spotify.com/console/get-recently-played/
 
-# Transformation step
+# Validate
 def check_if_valid_data(df: pd.DataFrame) -> bool:
 	# Check if dataframe is empty
 	if df.empty:
@@ -43,7 +43,7 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 
 if __name__ == "__main__":
 
-	# Extract step
+	# Extract 
 	# Send some information in the header, according to the Spotify API
 	headers = {
 		"Accept": "appliaction/json",
@@ -84,8 +84,35 @@ if __name__ == "__main__":
 
 	song_df = pd.DataFrame(song_dict, columns = ["song_name", "artist_name", "played_at", "timestamp"])
 
-	# Validate
+	# Transformation 
 	if check_if_valid_data(song_df):
 		print("Data valid, proceed to Load stage")
+
+	# Load
+	engine = sqlalchemy.create_engine(DATABASE_LOCATION)
+	conn = sqlite3.connect('my_played_tracks.sqlite')
+	cursor = conn.cursor()
+
+	sql_query = """
+	CREATE TABLE IF NOT EXISTS my_played_tracks(
+		song_name VARCHAR(200),
+		artist_name VARCHAR(200),
+		played_at VARCHAR(200),
+		timestamp VARCHAR(200),
+		CONSTRAINT primary_key_constraint PRIMARY KEY (played_at)
+	)
+	"""
+
+	cursor.execute(sql_query)
+	print("Opened database successfully")
+
+	try:
+		song_df.to_sql("my_played_tracks", engine, index=False, if_exists='append')
+	except:
+		print("Data already exists in the database")
+
+	conn.close()
+	print("Close database successfully")
+
 
 #	print(song_df)
