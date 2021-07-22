@@ -26,6 +26,21 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 	else:
 		raise Exception("Primary Key Check is violated")
 
+	# Check for nulls
+	if df.isnull().values.any():
+		raise Exception("Null values found")
+
+	# Check that all timestamps are of yesterday's date
+	yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+	yesterday = yesterday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+	timestamps = df["timestamp"].tolist()
+	for timestamp in timestamps:
+		if datetime.datetime.strptime(timestamp, "%Y-%m-%d") != yesterday:
+			raise Exception("At least one of the returned songs does not come from within the last 24 hours")
+
+	return True 
+
 if __name__ == "__main__":
 
 	# Extract step
@@ -69,4 +84,8 @@ if __name__ == "__main__":
 
 	song_df = pd.DataFrame(song_dict, columns = ["song_name", "artist_name", "played_at", "timestamp"])
 
-	print(song_df)
+	# Validate
+	if check_if_valid_data(song_df):
+		print("Data valid, proceed to Load stage")
+
+#	print(song_df)
